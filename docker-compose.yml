@@ -1,0 +1,16 @@
+services:
+  cos-harness:
+    build: .
+    ports:
+      - "47821:47821"
+    environment:
+      PORT: "47821"
+      HOSTNAME: "0.0.0.0"
+      DATA_DIR: /data
+      SETTINGS_ENCRYPTION_KEY: ${SETTINGS_ENCRYPTION_KEY:-}
+    volumes:
+      - cos-harness-data:/data
+    restart: unless-stopped
+
+volumes:
+  cos-harness-data:
