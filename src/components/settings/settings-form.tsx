@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,49 +16,32 @@ import type { PublicSettings } from "@/lib/settings/schema";
 
 type TestResult = { ok: boolean; message: string; credentialMode?: string };
 
-const emptyForm = {
-  llmBaseUrl: "https://api.deepseek.com/v1",
-  llmApiKey: "",
-  llmModel: "deepseek-chat",
-  secretId: "",
-  secretKey: "",
-  region: "ap-guangzhou",
-  bucket: "",
-  appId: "",
-};
+function formFromPublic(data: PublicSettings) {
+  return {
+    llmBaseUrl: data.llm.baseUrl || "https://api.deepseek.com/v1",
+    llmApiKey: "",
+    llmModel: data.llm.model || "deepseek-chat",
+    secretId: "",
+    secretKey: "",
+    region: data.tencent.region || "ap-guangzhou",
+    bucket: data.tencent.bucket,
+    appId: data.tencent.appId,
+  };
+}
 
-export function SettingsForm() {
-  const [form, setForm] = useState(emptyForm);
-  const [publicSettings, setPublicSettings] = useState<PublicSettings | null>(null);
-  const [loading, setLoading] = useState(true);
+export function SettingsForm({
+  initialSettings,
+}: {
+  initialSettings: PublicSettings;
+}) {
+  const [form, setForm] = useState(() => formFromPublic(initialSettings));
+  const [publicSettings, setPublicSettings] = useState(initialSettings);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [llmTest, setLlmTest] = useState<TestResult | null>(null);
   const [cosTest, setCosTest] = useState<TestResult | null>(null);
   const [testing, setTesting] = useState<"llm" | "cos" | null>(null);
-
-  useEffect(() => {
-    void (async () => {
-      try {
-        const response = await fetch("/api/settings");
-        const data = (await response.json()) as PublicSettings;
-        setPublicSettings(data);
-        setForm((current) => ({
-          ...current,
-          llmBaseUrl: data.llm.baseUrl || current.llmBaseUrl,
-          llmModel: data.llm.model || current.llmModel,
-          region: data.tencent.region || current.region,
-          bucket: data.tencent.bucket,
-          appId: data.tencent.appId,
-        }));
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "无法加载设置");
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, []);
 
   function update<K extends keyof typeof form>(key: K, value: string) {
     setForm((current) => ({ ...current, [key]: value }));
@@ -123,10 +106,6 @@ export function SettingsForm() {
     } finally {
       setTesting(null);
     }
-  }
-
-  if (loading) {
-    return <p className="text-sm text-muted-foreground">正在读取本地配置…</p>;
   }
 
   return (
