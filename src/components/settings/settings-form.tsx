@@ -77,7 +77,7 @@ export function SettingsForm({
       }
       setPublicSettings(data);
       setForm((current) => ({ ...current, llmApiKey: "", secretId: "", secretKey: "" }));
-      setMessage("已保存。密钥已加密写入本机，不会再返回到浏览器。");
+      setMessage("已保存。密钥已加密写入本机，不会再返回到界面。");
     } catch (err) {
       setError(err instanceof Error ? err.message : "保存失败");
     } finally {
@@ -186,8 +186,8 @@ export function SettingsForm({
         <CardHeader>
           <CardTitle>腾讯云 COS / 数据万象</CardTitle>
           <CardDescription>
-            SecretId / SecretKey 只保存在服务端。调用优先申请 STS 临时密钥；若 STS
-            失败则回退为服务端长期密钥，不会下发到浏览器。
+            SecretId / SecretKey 只保存在本机应用数据目录。调用优先申请 STS 临时密钥；若 STS
+            失败则回退为服务端长期密钥，不会下发到界面。
           </CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
@@ -263,8 +263,8 @@ export function SettingsForm({
           {saving ? "保存中…" : "保存设置"}
         </Button>
         <p className="text-xs text-muted-foreground">
-          配置加密存放在 data/settings.enc，主密钥为 SETTINGS_ENCRYPTION_KEY 或
-          data/.master.key。
+          配置加密存放在 {publicSettings.dataDir}/settings.enc，主密钥为
+          SETTINGS_ENCRYPTION_KEY 或同目录 .master.key。
         </p>
       </div>
     </form>

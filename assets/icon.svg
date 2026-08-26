@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a3344"/>
+      <stop offset="100%" stop-color="#0d1820"/>
+    </linearGradient>
+    <linearGradient id="bucket" x1="0.2" y1="0" x2="0.8" y2="1">
+      <stop offset="0%" stop-color="#9af0e2"/>
+      <stop offset="100%" stop-color="#2db7c4"/>
+    </linearGradient>
+    <linearGradient id="lid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e7fffb"/>
+      <stop offset="100%" stop-color="#7ee7d6"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" rx="224" fill="url(#bg)"/>
+  <path fill="url(#bucket)" d="M262 390h500c18 0 32 16 30 34l-42 412c-3 28-27 50-55 50H329c-28 0-52-22-55-50l-42-412c-2-18 12-34 30-34z"/>
+  <path fill="url(#lid)" d="M214 318c0-22 18-40 40-40h516c22 0 40 18 40 40v36H214v-36z"/>
+  <rect x="454" y="246" width="116" height="52" rx="16" fill="#e7fffb"/>
+  <circle cx="760" cy="250" r="28" fill="#7ee7d6" opacity="0.9"/>
+  <circle cx="820" cy="310" r="12" fill="#9af0e2"/>
+</svg>

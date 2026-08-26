@@ -1,0 +1,45 @@
+appId: com.yinshawnrao.cos-harness
+productName: COS Harness
+copyright: Copyright © COS Harness
+asar: true
+npmRebuild: false
+nodeGypRebuild: false
+directories:
+  output: dist-desktop
+  buildResources: assets
+files:
+  - electron/**/*
+  - assets/icon.png
+  - package.json
+  - "!**/node_modules/**"
+extraMetadata:
+  main: electron/main.cjs
+extraResources:
+  - from: .next/standalone
+    to: next
+linux:
+  target:
+    - AppImage
+    - dir
+  category: Utility
+  icon: icon.png
+  executableName: cos-harness
+  artifactName: ${name}-${version}-${os}-${arch}.${ext}
+mac:
+  target:
+    - dmg
+    - zip
+  category: public.app-category.developer-tools
+  icon: icon.png
+  identity: null
+  artifactName: ${name}-${version}-${os}-${arch}.${ext}
+win:
+  target:
+    - nsis
+    - portable
+  icon: icon.png
+  artifactName: ${name}-${version}-${os}-${arch}.${ext}
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  shortcutName: COS Harness

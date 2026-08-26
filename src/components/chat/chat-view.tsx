@@ -73,7 +73,7 @@ export function ChatView() {
       }
       setUploadHint(`已上传 ${data.filename} → ${data.bucket}/${data.key}`);
       await sendMessage({
-        text: `我刚刚通过网页上传了文件「${data.filename}」到 \`${data.bucket}/${data.key}\`（${data.bytes} 字节）。请确认对象已存在，并告诉我下一步可以做什么。`,
+        text: `我刚刚通过应用上传了文件「${data.filename}」到 \`${data.bucket}/${data.key}\`（${data.bytes} 字节）。请确认对象已存在，并告诉我下一步可以做什么。`,
       });
     } catch (err) {
       setUploadHint(err instanceof Error ? err.message : "上传失败");

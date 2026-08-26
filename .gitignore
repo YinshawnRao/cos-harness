@@ -19,6 +19,11 @@
 
 # production
 /build
+/dist-desktop
+*.AppImage
+*.exe
+*.dmg
+*.blockmap
 
 # misc
 .DS_Store

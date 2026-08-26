@@ -49,7 +49,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
         <p className="px-4 py-4 text-[11px] leading-5 text-muted-foreground">
-          单用户本地工具。密钥只保存在本机。
+          单用户桌面应用。密钥只保存在本机。
         </p>
       </aside>
       <div className="flex min-w-0 flex-1 flex-col">

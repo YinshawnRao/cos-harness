@@ -2,7 +2,11 @@ import fs from "node:fs";
 import path from "node:path";
 
 export function getDataDir(): string {
-  return process.env.DATA_DIR || path.join(process.cwd(), "data");
+  const fromEnv = process.env.DATA_DIR;
+  if (fromEnv && fromEnv.trim() !== "") {
+    return fromEnv;
+  }
+  return path.join(process.cwd(), "data");
 }
 
 export function ensureDataDir(): string {

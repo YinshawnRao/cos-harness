@@ -11,7 +11,7 @@ export default function SettingsPage() {
       <div className="mb-6">
         <h1 className="text-xl font-semibold">设置</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          填写你自己的 OpenAI 兼容模型接口与腾讯云 COS 凭证。保存后密钥不会再回传到浏览器。
+          填写你自己的 OpenAI 兼容模型接口与腾讯云 COS 凭证。保存后密钥不会再回传到界面。
         </p>
       </div>
       <SettingsForm initialSettings={initialSettings} />
