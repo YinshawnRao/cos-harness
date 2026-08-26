@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import { decryptJson, encryptJson } from "../crypto";
 import { maskSecret } from "../redact";
-import { settingsPath } from "../paths";
+import { getDataDir, settingsPath } from "../paths";
 import {
   settingsPatchSchema,
   storedSettingsSchema,
@@ -13,6 +13,7 @@ import {
 function emptyPublic(): PublicSettings {
   return {
     configured: false,
+    dataDir: getDataDir(),
     llm: {
       baseUrl: "",
       model: "",
@@ -43,6 +44,7 @@ export function toPublicSettings(settings: StoredSettings | null): PublicSetting
   if (!settings) return emptyPublic();
   return {
     configured: true,
+    dataDir: getDataDir(),
     llm: {
       baseUrl: settings.llm.baseUrl,
       model: settings.llm.model,

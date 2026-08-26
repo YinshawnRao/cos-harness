@@ -14,6 +14,9 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "data/**",
     "coverage/**",
+    "dist-desktop/**",
+    "electron/**",
+    "assets/**",
   ]),
 ]);
 

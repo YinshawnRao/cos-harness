@@ -4,14 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useStudio } from "@/components/studio/studio-context";
 import type { PublicSettings } from "@/lib/settings/schema";
 
 type TestResult = { ok: boolean; message: string; credentialMode?: string };
@@ -34,6 +27,7 @@ export function SettingsForm({
 }: {
   initialSettings: PublicSettings;
 }) {
+  const { loadSettings: reloadStudio, refresh } = useStudio();
   const [form, setForm] = useState(() => formFromPublic(initialSettings));
   const [publicSettings, setPublicSettings] = useState(initialSettings);
   const [saving, setSaving] = useState(false);
@@ -72,12 +66,12 @@ export function SettingsForm({
         }),
       });
       const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "保存失败");
-      }
+      if (!response.ok) throw new Error(data.error || "保存失败");
       setPublicSettings(data);
       setForm((current) => ({ ...current, llmApiKey: "", secretId: "", secretKey: "" }));
-      setMessage("已保存。密钥已加密写入本机，不会再返回到浏览器。");
+      setMessage("已写入本机。密钥不会再回传到界面。");
+      const latest = await reloadStudio();
+      await refresh(undefined, latest);
     } catch (err) {
       setError(err instanceof Error ? err.message : "保存失败");
     } finally {
@@ -97,10 +91,7 @@ export function SettingsForm({
       if (kind === "llm") setLlmTest(data);
       else setCosTest(data);
     } catch (err) {
-      const failed = {
-        ok: false,
-        message: err instanceof Error ? err.message : "测试失败",
-      };
+      const failed = { ok: false, message: err instanceof Error ? err.message : "测试失败" };
       if (kind === "llm") setLlmTest(failed);
       else setCosTest(failed);
     } finally {
@@ -109,165 +100,154 @@ export function SettingsForm({
   }
 
   return (
-    <form className="space-y-6" onSubmit={onSave}>
-      {error && (
-        <Alert variant="destructive">
-          <AlertTitle>出错了</AlertTitle>
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      {message && (
-        <Alert>
-          <AlertTitle>已保存</AlertTitle>
-          <AlertDescription>{message}</AlertDescription>
-        </Alert>
-      )}
+    <form className="mt-8 space-y-6" onSubmit={onSave}>
+      {error && <p className="text-sm text-red-400">{error}</p>}
+      {message && <p className="text-sm text-cyan-200">{message}</p>}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>大模型（BYOK）</CardTitle>
-          <CardDescription>
-            任意 OpenAI 兼容接口：DeepSeek、Moonshot、OpenAI 或本地代理。Base URL 需包含
-            /v1。
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <Field label="Base URL">
-            <Input
-              value={form.llmBaseUrl}
-              onChange={(e) => update("llmBaseUrl", e.target.value)}
-              placeholder="https://api.deepseek.com/v1"
-              required
-            />
-          </Field>
-          <Field
-            label="API Key"
-            hint={
-              publicSettings?.llm.apiKeySet
-                ? `已保存：${publicSettings.llm.apiKeyMasked}。留空表示不修改。`
-                : "保存后不会再显示明文。"
-            }
-          >
-            <Input
-              type="password"
-              autoComplete="off"
-              value={form.llmApiKey}
-              onChange={(e) => update("llmApiKey", e.target.value)}
-              placeholder={publicSettings?.llm.apiKeySet ? "••••••••" : "sk-..."}
-            />
-          </Field>
-          <Field label="模型名">
-            <Input
-              value={form.llmModel}
-              onChange={(e) => update("llmModel", e.target.value)}
-              placeholder="deepseek-chat"
-              required
-            />
-          </Field>
-          <div className="flex items-center gap-3">
+      <div className="grid gap-4 lg:grid-cols-2">
+        <section className="rounded-2xl border border-white/8 bg-white/3 p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-[15px] font-medium">大模型</h2>
+              <p className="mt-1 text-[12px] text-zinc-500">OpenAI 兼容，Base URL 含 /v1</p>
+            </div>
+            <StatusPill result={llmTest} />
+          </div>
+          <div className="mt-5 grid gap-3">
+            <Field label="Base URL">
+              <Input
+                value={form.llmBaseUrl}
+                onChange={(e) => update("llmBaseUrl", e.target.value)}
+                required
+              />
+            </Field>
+            <Field
+              label="API Key"
+              hint={
+                publicSettings.llm.apiKeySet
+                  ? `已保存 ${publicSettings.llm.apiKeyMasked}`
+                  : "保存后只显示掩码"
+              }
+            >
+              <Input
+                type="password"
+                autoComplete="off"
+                value={form.llmApiKey}
+                onChange={(e) => update("llmApiKey", e.target.value)}
+                placeholder={publicSettings.llm.apiKeySet ? "••••••••" : "sk-..."}
+              />
+            </Field>
+            <Field label="模型">
+              <Input
+                value={form.llmModel}
+                onChange={(e) => update("llmModel", e.target.value)}
+                required
+              />
+            </Field>
             <Button
               type="button"
               variant="outline"
               disabled={testing !== null}
               onClick={() => void test("llm")}
             >
-              {testing === "llm" ? "测试中…" : "测试 LLM 连接"}
+              {testing === "llm" ? "测试中…" : "测试连接"}
             </Button>
-            {llmTest && (
-              <span className={llmTest.ok ? "text-xs text-primary" : "text-xs text-destructive"}>
-                {llmTest.message}
-              </span>
-            )}
           </div>
-        </CardContent>
-      </Card>
+        </section>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>腾讯云 COS / 数据万象</CardTitle>
-          <CardDescription>
-            SecretId / SecretKey 只保存在服务端。调用优先申请 STS 临时密钥；若 STS
-            失败则回退为服务端长期密钥，不会下发到浏览器。
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <Field
-            label="SecretId"
-            hint={
-              publicSettings?.tencent.secretIdSet
-                ? `已保存：${publicSettings.tencent.secretIdMasked}`
-                : undefined
-            }
-          >
-            <Input
-              autoComplete="off"
-              value={form.secretId}
-              onChange={(e) => update("secretId", e.target.value)}
-              placeholder={publicSettings?.tencent.secretIdSet ? "••••••••" : "AKIDxxxx"}
-            />
-          </Field>
-          <Field label="SecretKey">
-            <Input
-              type="password"
-              autoComplete="off"
-              value={form.secretKey}
-              onChange={(e) => update("secretKey", e.target.value)}
-              placeholder={publicSettings?.tencent.secretKeySet ? "••••••••" : ""}
-            />
-          </Field>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="地域 Region">
-              <Input
-                value={form.region}
-                onChange={(e) => update("region", e.target.value)}
-                placeholder="ap-guangzhou"
-                required
-              />
-            </Field>
-            <Field label="默认存储桶" hint="格式 BucketName-APPID">
-              <Input
-                value={form.bucket}
-                onChange={(e) => update("bucket", e.target.value)}
-                placeholder="examplebucket-1250000000"
-                required
-              />
-            </Field>
+        <section className="rounded-2xl border border-white/8 bg-white/3 p-5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-[15px] font-medium">腾讯云 COS</h2>
+              <p className="mt-1 text-[12px] text-zinc-500">STS 优先，失败则本机长期密钥</p>
+            </div>
+            <StatusPill result={cosTest} />
           </div>
-          <Field label="AppId（可选）" hint="一般可从桶名末尾自动解析。">
-            <Input
-              value={form.appId}
-              onChange={(e) => update("appId", e.target.value)}
-              placeholder="1250000000"
-            />
-          </Field>
-          <div className="flex items-center gap-3">
+          <div className="mt-5 grid gap-3">
+            <Field
+              label="SecretId"
+              hint={
+                publicSettings.tencent.secretIdSet
+                  ? `已保存 ${publicSettings.tencent.secretIdMasked}`
+                  : undefined
+              }
+            >
+              <Input
+                autoComplete="off"
+                value={form.secretId}
+                onChange={(e) => update("secretId", e.target.value)}
+                placeholder={publicSettings.tencent.secretIdSet ? "••••••••" : "AKIDxxxx"}
+              />
+            </Field>
+            <Field label="SecretKey">
+              <Input
+                type="password"
+                autoComplete="off"
+                value={form.secretKey}
+                onChange={(e) => update("secretKey", e.target.value)}
+                placeholder={publicSettings.tencent.secretKeySet ? "••••••••" : ""}
+              />
+            </Field>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Field label="地域">
+                <Input
+                  value={form.region}
+                  onChange={(e) => update("region", e.target.value)}
+                  required
+                />
+              </Field>
+              <Field label="默认桶">
+                <Input
+                  value={form.bucket}
+                  onChange={(e) => update("bucket", e.target.value)}
+                  placeholder="name-1250000000"
+                  required
+                />
+              </Field>
+            </div>
             <Button
               type="button"
               variant="outline"
               disabled={testing !== null}
               onClick={() => void test("cos")}
             >
-              {testing === "cos" ? "测试中…" : "测试 COS 连接"}
+              {testing === "cos" ? "测试中…" : "测试连接"}
             </Button>
-            {cosTest && (
-              <span className={cosTest.ok ? "text-xs text-primary" : "text-xs text-destructive"}>
-                {cosTest.message}
-              </span>
-            )}
           </div>
-        </CardContent>
-      </Card>
+        </section>
+      </div>
 
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={saving}>
-          {saving ? "保存中…" : "保存设置"}
+          {saving ? "保存中…" : "保存"}
         </Button>
-        <p className="text-xs text-muted-foreground">
-          配置加密存放在 data/settings.enc，主密钥为 SETTINGS_ENCRYPTION_KEY 或
-          data/.master.key。
+        <p className="text-[11px] text-zinc-500">
+          {publicSettings.dataDir}/settings.enc
         </p>
       </div>
     </form>
+  );
+}
+
+function StatusPill({ result }: { result: TestResult | null }) {
+  if (!result) {
+    return (
+      <span className="rounded-full border border-white/8 px-2 py-0.5 text-[10px] text-zinc-500">
+        未测
+      </span>
+    );
+  }
+  return (
+    <span
+      className={
+        result.ok
+          ? "rounded-full border border-cyan-400/30 bg-cyan-400/10 px-2 py-0.5 text-[10px] text-cyan-200"
+          : "rounded-full border border-red-400/30 bg-red-400/10 px-2 py-0.5 text-[10px] text-red-300"
+      }
+      title={result.message}
+    >
+      {result.ok ? "已连通" : "失败"}
+    </span>
   );
 }
 
@@ -284,7 +264,7 @@ function Field({
     <div className="grid gap-1.5">
       <Label>{label}</Label>
       {children}
-      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+      {hint && <p className="text-[11px] text-zinc-500">{hint}</p>}
     </div>
   );
 }

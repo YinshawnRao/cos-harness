@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Noto_Sans_SC, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppShell } from "@/components/app-shell";
+import { loadSettings, toPublicSettings } from "@/lib/settings/store";
 
 const notoSans = Noto_Sans_SC({
   variable: "--font-sans",
@@ -16,17 +17,20 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "COS Harness",
-  description: "自托管腾讯云 COS / 数据万象智能控制台",
+  description: "腾讯云 COS / 数据万象桌面工作室",
 };
 
+export const dynamic = "force-dynamic";
+
 export default function RootLayout({ children }: LayoutProps<"/">) {
+  const initialSettings = toPublicSettings(loadSettings());
   return (
     <html
       lang="zh-CN"
       className={`dark ${notoSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <AppShell>{children}</AppShell>
+        <AppShell initialSettings={initialSettings}>{children}</AppShell>
       </body>
     </html>
   );

@@ -74,51 +74,48 @@ export function ToolCard({
     state === "approval-requested" && part.approval?.id && !part.approval.isAutomatic;
 
   return (
-    <div className="rounded-lg border border-border/80 bg-card/80 p-3">
-      <div className="flex items-center gap-2 text-xs font-medium">
+    <div className="rounded-xl border border-white/8 bg-black/30 p-3">
+      <div className="flex items-center gap-2 text-xs font-medium text-zinc-100">
         {state === "output-available" ? (
-          <Check className="size-3.5 text-primary" />
+          <Check className="size-3.5 text-cyan-300" />
         ) : state === "output-error" || state === "output-denied" ? (
-          <X className="size-3.5 text-destructive" />
+          <X className="size-3.5 text-red-400" />
         ) : state === "approval-requested" ? (
-          <AlertTriangle className="size-3.5 text-amber-400" />
+          <AlertTriangle className="size-3.5 text-amber-300" />
         ) : (
-          <LoaderCircle className="size-3.5 animate-spin text-muted-foreground" />
+          <LoaderCircle className="size-3.5 animate-spin text-zinc-500" />
         )}
-        <Wrench className="size-3.5 text-muted-foreground" />
+        <Wrench className="size-3.5 text-zinc-500" />
         <span>{label}</span>
-        <span className="font-mono text-[11px] text-muted-foreground">{name}</span>
+        <span className="font-mono text-[10px] text-zinc-500">{name}</span>
       </div>
       {part.input != null && (
-        <pre className="mt-2 overflow-x-auto text-[11px] leading-5 text-muted-foreground">
+        <pre className="mt-2 overflow-x-auto font-mono text-[11px] leading-5 text-zinc-500">
           {summarizeArgs(part.input)}
         </pre>
       )}
       {state === "output-available" && (
-        <p className="mt-2 text-xs text-foreground/90">{summarizeOutput(part.output)}</p>
+        <p className="mt-2 text-xs text-zinc-200">{summarizeOutput(part.output)}</p>
       )}
       {state === "output-error" && (
-        <p className="mt-2 text-xs text-destructive">{part.errorText}</p>
+        <p className="mt-2 text-xs text-red-400">{part.errorText}</p>
       )}
       {state === "output-denied" && (
-        <p className="mt-2 text-xs text-muted-foreground">
+        <p className="mt-2 text-xs text-zinc-500">
           已取消{part.approval?.reason ? `：${part.approval.reason}` : ""}
         </p>
       )}
       {pendingApproval && (
-        <div className="mt-3 rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
-          <p className="text-xs leading-5">
-            这是破坏性操作，确认后才会真正执行。请核对对象键。
+        <div className="confirm-pulse mt-3 rounded-xl border border-amber-400/40 bg-amber-400/10 p-3">
+          <p className="text-[12px] font-medium text-amber-100">需要确认</p>
+          <p className="mt-1 text-[11px] leading-5 text-zinc-400">
+            破坏性操作，核对对象键后再执行。
           </p>
-          <div className="mt-2 flex gap-2">
-            <Button size="sm" onClick={() => onApprove(part.approval!.id)}>
+          <div className="mt-3 flex gap-2">
+            <Button size="sm" variant="destructive" onClick={() => onApprove(part.approval!.id)}>
               确认执行
             </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => onDeny(part.approval!.id)}
-            >
+            <Button size="sm" variant="outline" onClick={() => onDeny(part.approval!.id)}>
               取消
             </Button>
           </div>
@@ -127,3 +124,11 @@ export function ToolCard({
     </div>
   );
 }
+
+export const SAMPLE_DELETE_CONFIRMATION: ToolPartLike = {
+  type: "tool-delete_object",
+  toolName: "delete_object",
+  state: "approval-requested",
+  input: { key: "photos/hero.jpg", bucket: "your-bucket-1250000000" },
+  approval: { id: "sample-approval", approved: false, isAutomatic: false },
+};

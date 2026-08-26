@@ -47,6 +47,7 @@ export type SettingsPatch = z.infer<typeof settingsPatchSchema>;
 
 export type PublicSettings = {
   configured: boolean;
+  dataDir: string;
   llm: {
     baseUrl: string;
     model: string;

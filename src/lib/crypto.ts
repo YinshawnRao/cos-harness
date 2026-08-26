@@ -28,7 +28,9 @@ export function getMasterKey(): Buffer {
   if (fs.existsSync(file)) {
     const parsed = parseHexKey(fs.readFileSync(file, "utf8"));
     if (!parsed) {
-      throw new Error("本地主密钥文件损坏，请删除 data/.master.key 后重启以重新生成。");
+      throw new Error(
+        `本地主密钥文件损坏，请删除 ${file} 后重启以重新生成。`,
+      );
     }
     return parsed;
   }
