@@ -37,11 +37,17 @@ export function StagePanel({ onPickFiles }: { onPickFiles: () => void }) {
     setProcessResult,
     setAgentOpen,
     setSeedPrompt,
+    setStageIntent,
+    stageIntent,
     selectBucket,
     buckets,
     refresh,
   } = useStudio();
   const selected = objects.find((item) => item.key === selectedKey) || null;
+  const ask = (prompt: string) => {
+    setAgentOpen(true);
+    setSeedPrompt(prompt);
+  };
 
   if (!settings?.tencent.secretIdSet) {
     return (
@@ -68,10 +74,7 @@ export function StagePanel({ onPickFiles }: { onPickFiles: () => void }) {
         bucket={bucket}
         result={processResult}
         onResult={setProcessResult}
-        onAsk={(prompt) => {
-          setAgentOpen(true);
-          setSeedPrompt(prompt);
-        }}
+        onAsk={ask}
       />
     );
   }
@@ -81,12 +84,13 @@ export function StagePanel({ onPickFiles }: { onPickFiles: () => void }) {
       <FileStage
         item={selected}
         bucket={bucket}
-        onAsk={(prompt) => {
-          setAgentOpen(true);
-          setSeedPrompt(prompt);
-        }}
+        onAsk={ask}
       />
     );
+  }
+
+  if (stageIntent === "ci") {
+    return <CiLab onPickFiles={onPickFiles} onAsk={ask} onHome={() => setStageIntent("home")} />;
   }
 
   if (prefix || objects.length > 0 || prefixes.length > 0) {
@@ -129,8 +133,8 @@ export function StagePanel({ onPickFiles }: { onPickFiles: () => void }) {
           title="图片处理"
           copy="缩略图、转 webp、水印。默认写新键。"
           onClick={() => {
-            setAgentOpen(true);
-            setSeedPrompt("把当前桶里的一张图缩放到宽 800 并转成 webp，写到新键。");
+            setStageIntent("ci");
+            ask("把当前桶里的一张图缩放到宽 800 并转成 webp，写到新键。");
           }}
         />
         <ActionTile
@@ -138,8 +142,7 @@ export function StagePanel({ onPickFiles }: { onPickFiles: () => void }) {
           title="签名链接"
           copy="私有对象的限时预览，不把桶公开。"
           onClick={() => {
-            setAgentOpen(true);
-            setSeedPrompt("给当前前缀下最近的一张图片生成 1 小时签名预览链接。");
+            ask("给当前前缀下最近的一张图片生成 1 小时签名预览链接。");
           }}
         />
       </div>
@@ -268,6 +271,100 @@ function FileStage({
         >
           签名链接
         </Button>
+      </div>
+    </div>
+  );
+}
+
+function CiLab({
+  onAsk,
+  onHome,
+  onPickFiles,
+}: {
+  onAsk: (prompt: string) => void;
+  onHome: () => void;
+  onPickFiles: () => void;
+}) {
+  const [watermark, setWatermark] = useState("COS Harness");
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="flex items-start justify-between gap-4 px-6 py-4">
+        <div className="min-w-0">
+          <div className="text-[11px] tracking-[0.18em] text-cyan-300/80 uppercase">图片台</div>
+          <h2 className="mt-1 text-lg text-zinc-50">数据万象处理台</h2>
+          <p className="text-[12px] text-zinc-500">
+            选中左侧图片后，这里对比原图与处理结果。默认写新键。
+          </p>
+        </div>
+        <div className="flex flex-wrap justify-end gap-1.5">
+          <CiButton onClick={() => onAsk("把当前选中的图生成 240px 缩略图，写到新键。")}>
+            缩略图
+          </CiButton>
+          <CiButton onClick={() => onAsk("把当前选中的图转成 webp，写到新键。")}>转 webp</CiButton>
+          <CiButton
+            onClick={() =>
+              onAsk(`给当前选中的图加文字水印「${watermark}」，写到新键。`)
+            }
+          >
+            加水印
+          </CiButton>
+          <CiButton onClick={() => onAsk("读取当前选中图的 imageInfo。")}>
+            <Info className="size-3.5" />
+            图片信息
+          </CiButton>
+          <CiButton onClick={() => onAsk("给当前选中的图生成 1 小时签名预览链接。")}>
+            <Link2 className="size-3.5" />
+            签名链接
+          </CiButton>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-2 px-6 pb-3">
+        <input
+          value={watermark}
+          onChange={(event) => setWatermark(event.target.value)}
+          className="h-8 max-w-56 rounded-lg border border-white/8 bg-black/20 px-2 text-[12px] outline-none focus:border-cyan-400/40"
+          placeholder="水印文字"
+        />
+        <span className="text-[11px] text-zinc-500">处理默认写新键，不覆盖原图</span>
+        <button
+          type="button"
+          onClick={onHome}
+          className="ml-auto text-[11px] text-zinc-500 hover:text-zinc-200"
+        >
+          返回首页
+        </button>
+        <Button size="sm" variant="outline" onClick={onPickFiles}>
+          <Upload data-icon="inline-start" />
+          上传
+        </Button>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-8">
+        <div className="grid gap-3 md:grid-cols-2">
+          <PreviewCard label="原图" src={null} fadeKey="lab-before" />
+          <PreviewCard label="处理后" src={null} fadeKey="lab-after" accent />
+        </div>
+        <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-cyan-400/15 bg-cyan-400/6 px-3 py-2 text-[12px]">
+          <span className="text-zinc-400">新键</span>
+          <span className="text-zinc-300">处理完成后显示，可复制或打开签名链接</span>
+          <span className="ml-auto inline-flex items-center gap-1 text-cyan-200/70">
+            <Copy className="size-3.5" />
+            复制
+          </span>
+          <span className="inline-flex items-center gap-1 text-cyan-200/70">
+            <ExternalLink className="size-3.5" />
+            打开
+          </span>
+        </div>
+        <button
+          type="button"
+          onClick={() => onAsk("看一下当前桶里适合做缩略图和水印的图片。")}
+          className="mt-6 inline-flex items-center gap-1.5 text-[12px] text-zinc-500 hover:text-cyan-200"
+        >
+          <Sparkles className="size-3.5" />
+          让助手继续处理
+        </button>
       </div>
     </div>
   );
@@ -424,11 +521,14 @@ function ImageStage({
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-6 pb-8">
-        <div className={after ? "grid gap-3 md:grid-cols-2" : "grid"}>
+        <div className="grid gap-3 md:grid-cols-2">
           <PreviewCard label="原图" src={before} fadeKey={item.key} />
-          {after && (
-            <PreviewCard label="处理后" src={after} fadeKey={result?.targetKey || after} accent />
-          )}
+          <PreviewCard
+            label="处理后"
+            src={after}
+            fadeKey={result?.targetKey || after || "pending"}
+            accent
+          />
         </div>
         {result?.targetKey && (
           <div className="mt-4 flex flex-wrap items-center gap-2 rounded-xl border border-cyan-400/15 bg-cyan-400/6 px-3 py-2 text-[12px]">
@@ -539,7 +639,7 @@ function PreviewCard({
       }
     >
       <figcaption className="px-3 py-2 text-[11px] tracking-wide text-zinc-500">{label}</figcaption>
-      <div className="grid aspect-[4/3] place-items-center bg-[#08090c]">
+      <div className="relative aspect-[4/3] bg-[#08090c]">
         {src ? (
           // COS signed URL hosts vary; next/image remotePatterns cannot cover them.
           // eslint-disable-next-line @next/next/no-img-element
@@ -547,16 +647,48 @@ function PreviewCard({
             key={fadeKey}
             src={src}
             alt={label}
-            className="studio-fade max-h-full max-w-full object-contain"
+            className="studio-fade absolute inset-0 size-full object-contain"
             onLoad={() => {
               loaded.current = fadeKey;
             }}
           />
         ) : (
-          <ImageIcon className="size-10 text-zinc-700" />
+          <div className="absolute inset-0">
+            <StudioPlate variant={accent ? "after" : "before"} />
+          </div>
         )}
       </div>
     </figure>
+  );
+}
+
+function StudioPlate({ variant }: { variant: "before" | "after" }) {
+  const after = variant === "after";
+  return (
+    <div
+      className={
+        after
+          ? "relative size-full overflow-hidden bg-[#071416]"
+          : "relative size-full overflow-hidden bg-[#12100e]"
+      }
+    >
+      <div
+        className="absolute inset-10 rounded-xl"
+        style={{
+          background: after
+            ? "linear-gradient(145deg, rgba(21, 94, 99, 0.9), #0a1416 42%, #102c2e)"
+            : "linear-gradient(145deg, rgba(90, 78, 64, 0.85), #1a1814 42%, #12100e)",
+        }}
+      />
+      <div className="absolute inset-x-16 top-16 h-20 rounded-full bg-white/8 blur-2xl" />
+      {after ? (
+        <span className="absolute right-8 bottom-8 text-[11px] tracking-[0.35em] text-cyan-100/80">
+          COS
+        </span>
+      ) : (
+        <ImageIcon className="absolute right-8 bottom-8 size-5 text-white/25" />
+      )}
+    </div>
   );
 }
 

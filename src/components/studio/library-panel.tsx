@@ -95,10 +95,20 @@ export function LibraryPanel() {
 
         <div className="min-h-0 flex-1 overflow-y-auto px-2 pb-3">
           {!settings?.tencent.secretIdSet && (
-            <EmptyNote text="先到设置里接入腾讯云，资源库才会亮起来。" />
+            <LibraryPitch text="接入腾讯云后，这里是桶、文件夹和图片缩略图。" />
           )}
-          {listError && <EmptyNote text={listError} />}
+          {listError && (
+            <div className="mx-1 mb-2 rounded-lg border border-amber-400/20 bg-amber-400/8 px-2 py-2">
+              <p className="text-[11px] leading-5 text-amber-100/90">密钥未通过 COS 校验</p>
+              <p className="mt-0.5 line-clamp-3 font-mono text-[10px] text-amber-200/60">
+                {listError}
+              </p>
+            </div>
+          )}
           {loadingList && <EmptyNote text="正在读取对象…" />}
+          {!loadingList && listError && settings?.tencent.secretIdSet && (
+            <LibraryPitch text="有效密钥到位后：切换桶、钻前缀、点缩略图进处理台。" />
+          )}
           {!loadingList && !listError && settings?.tencent.secretIdSet && (
             <ul className="space-y-0.5">
               {prefixes.map((item, index) => (
@@ -185,6 +195,19 @@ function Thumb({ item }: { item: { isImage: boolean; thumbnailUrl?: string; key:
 
 function EmptyNote({ text }: { text: string }) {
   return <p className="px-2 py-6 text-[12px] leading-6 text-zinc-500">{text}</p>;
+}
+
+function LibraryPitch({ text }: { text: string }) {
+  return (
+    <div className="px-2 py-4">
+      <div className="flex gap-2 text-zinc-600">
+        <Folder className="size-4 text-cyan-300/50" />
+        <ImageIcon className="size-4 text-cyan-300/40" />
+        <File className="size-4" />
+      </div>
+      <p className="mt-3 text-[12px] leading-6 text-zinc-500">{text}</p>
+    </div>
+  );
 }
 
 function breadcrumb(prefix: string) {

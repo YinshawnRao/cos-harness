@@ -11,7 +11,7 @@ import { Send, Square } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ToolCard, type ToolPartLike } from "@/components/chat/tool-card";
+import { SAMPLE_DELETE_CONFIRMATION, ToolCard, type ToolPartLike } from "@/components/chat/tool-card";
 
 function isToolPart(part: { type: string }): part is ToolPartLike {
   return part.type.startsWith("tool-") || part.type === "dynamic-tool";
@@ -64,14 +64,26 @@ export function ChatView({
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className={compact ? "flex flex-col gap-3 px-3 py-3" : "mx-auto flex w-full max-w-3xl flex-col gap-4 px-4 py-6"}>
           {messages.length === 0 && (
-            <div className="rounded-xl border border-white/8 bg-white/3 px-3 py-4">
-              <p className="text-[13px] text-zinc-200">对着当前桶说话</p>
-              <p className="mt-1 text-[11px] leading-5 text-zinc-500">
-                列对象、签名、处理图片。破坏性操作会在这里确认。
+            <div className="space-y-3">
+              <div className="rounded-xl border border-white/8 bg-white/3 px-3 py-4">
+                <p className="text-[13px] text-zinc-200">对着当前桶说话</p>
+                <p className="mt-1 text-[11px] leading-5 text-zinc-500">
+                  列对象、签名、处理图片。删除和覆盖会亮出确认卡，点了才执行。
+                </p>
+                {contextHint && (
+                  <p className="mt-2 font-mono text-[10px] text-zinc-600">{contextHint}</p>
+                )}
+              </div>
+              <p className="px-1 text-[10px] tracking-[0.16em] text-zinc-600 uppercase">
+                删除时会出现这张卡 · 示例
               </p>
-              {contextHint && (
-                <p className="mt-2 font-mono text-[10px] text-zinc-600">{contextHint}</p>
-              )}
+              <div className="pointer-events-none">
+                <ToolCard
+                  part={SAMPLE_DELETE_CONFIRMATION}
+                  onApprove={() => undefined}
+                  onDeny={() => undefined}
+                />
+              </div>
             </div>
           )}
 

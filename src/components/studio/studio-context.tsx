@@ -43,10 +43,12 @@ type StudioContextValue = {
   listError: string | null;
   seedPrompt: string | null;
   processResult: ProcessResult | null;
+  stageIntent: "home" | "ci";
   setAgentOpen: (open: boolean) => void;
   setLibraryWidth: (width: number) => void;
   setSeedPrompt: (prompt: string | null) => void;
   setProcessResult: (result: ProcessResult | null) => void;
+  setStageIntent: (intent: "home" | "ci") => void;
   selectBucket: (name: string) => void;
   openPrefix: (prefix: string) => void;
   selectObject: (key: string | null) => void;
@@ -85,6 +87,7 @@ export function StudioProvider({
   const [listError, setListError] = useState<string | null>(null);
   const [seedPrompt, setSeedPrompt] = useState<string | null>(null);
   const [processResult, setProcessResult] = useState<ProcessResult | null>(null);
+  const [stageIntent, setStageIntent] = useState<"home" | "ci">("home");
 
   const loadSettings = useCallback(async () => {
     const response = await fetch("/api/settings");
@@ -156,6 +159,7 @@ export function StudioProvider({
   const selectObject = useCallback((key: string | null) => {
     setSelectedKey(key);
     setProcessResult(null);
+    if (key) setStageIntent("ci");
   }, []);
 
   const value = useMemo(
@@ -173,10 +177,12 @@ export function StudioProvider({
       listError,
       seedPrompt,
       processResult,
+      stageIntent,
       setAgentOpen,
       setLibraryWidth,
       setSeedPrompt,
       setProcessResult,
+      setStageIntent,
       selectBucket,
       openPrefix,
       selectObject,
@@ -197,6 +203,7 @@ export function StudioProvider({
       listError,
       seedPrompt,
       processResult,
+      stageIntent,
       selectBucket,
       openPrefix,
       selectObject,
