@@ -106,7 +106,7 @@ export function ToolCard({
         </p>
       )}
       {pendingApproval && (
-        <div className="mt-3 rounded-md border border-amber-500/40 bg-amber-500/10 p-3">
+        <div className="mt-3 rounded-md border border-amber-500/40 bg-amber-500/10 p-3 confirm-pulse">
           <p className="text-xs leading-5">
             这是破坏性操作，确认后才会真正执行。请核对对象键。
           </p>

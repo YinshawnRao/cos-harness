@@ -1,5 +1,5 @@
-import { ChatView } from "@/components/chat/chat-view";
+import { StudioWorkspace } from "@/components/studio/studio-workspace";
 
 export default function HomePage() {
-  return <ChatView />;
+  return <StudioWorkspace />;
 }

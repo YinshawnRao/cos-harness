@@ -1,6 +1,6 @@
 "use strict";
 
-const { app, BrowserWindow, Menu, shell, nativeTheme } = require("electron");
+const { app, BrowserWindow, Menu, shell, nativeTheme, ipcMain } = require("electron");
 const { spawn } = require("node:child_process");
 const fs = require("node:fs");
 const path = require("node:path");
@@ -62,7 +62,7 @@ function showSplash() {
   <meta charset="utf-8"/>
   <title>COS Harness</title>
   <style>
-    html, body { height: 100%; margin: 0; background: #121820; color: #d7e6ea; font-family: system-ui, sans-serif; }
+    html, body { height: 100%; margin: 0; background: #07090c; color: #d7e6ea; font-family: system-ui, sans-serif; }
     main { height: 100%; display: grid; place-items: center; text-align: center; }
     h1 { font-size: 18px; letter-spacing: 0.04em; margin: 0 0 8px; color: #7ee7d6; }
     p { margin: 0; font-size: 13px; opacity: 0.72; }
@@ -81,14 +81,18 @@ function showSplash() {
 }
 
 function createWindow() {
+  const isMac = process.platform === "darwin";
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 840,
-    minWidth: 900,
-    minHeight: 600,
+    width: 1480,
+    height: 920,
+    minWidth: 1100,
+    minHeight: 720,
     title: "COS Harness",
-    backgroundColor: "#121820",
-    autoHideMenuBar: false,
+    backgroundColor: "#07090c",
+    frame: false,
+    titleBarStyle: isMac ? "hiddenInset" : undefined,
+    trafficLightPosition: isMac ? { x: 14, y: 12 } : undefined,
+    autoHideMenuBar: true,
     show: false,
     icon: fs.existsSync(ICON_PATH) ? ICON_PATH : undefined,
     webPreferences: {
@@ -98,6 +102,7 @@ function createWindow() {
       sandbox: true,
     },
   });
+  mainWindow.setMenuBarVisibility(false);
 
   mainWindow.on("ready-to-show", () => {
     mainWindow?.show();
@@ -154,7 +159,7 @@ function buildMenu() {
       label: "窗口",
       submenu: [
         {
-          label: "对话",
+          label: "工作台",
           accelerator: "CmdOrCtrl+1",
           click: () => loadPath("/"),
         },
@@ -297,6 +302,19 @@ async function boot() {
   await waitForHttp(appUrl("/"));
   loadPath("/");
 }
+
+ipcMain.on("window:minimize", (event) => {
+  BrowserWindow.fromWebContents(event.sender)?.minimize();
+});
+ipcMain.on("window:maximize", (event) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (!win) return;
+  if (win.isMaximized()) win.unmaximize();
+  else win.maximize();
+});
+ipcMain.on("window:close", (event) => {
+  BrowserWindow.fromWebContents(event.sender)?.close();
+});
 
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
