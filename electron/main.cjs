@@ -35,7 +35,12 @@ let quitting = false;
 
 if (process.env.COS_HARNESS_NO_SANDBOX === "1" || process.env.CI === "true") {
   app.commandLine.appendSwitch("no-sandbox");
+  app.commandLine.appendSwitch("disable-setuid-sandbox");
+  app.commandLine.appendSwitch("no-zygote");
 }
+
+// Chromium needs exec on /dev/shm; some VMs/containers mount it noexec.
+app.commandLine.appendSwitch("disable-dev-shm-usage");
 
 function isPackaged() {
   return app.isPackaged;
