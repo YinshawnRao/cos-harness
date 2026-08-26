@@ -15,4 +15,15 @@ if (fs.existsSync(publicSrc)) {
   fs.cpSync(publicSrc, path.join(standalone, "public"), { recursive: true });
 }
 
+const required = [
+  path.join(standalone, "server.js"),
+  path.join(standalone, "node_modules", "next"),
+  path.join(standalone, "node_modules", "cos-nodejs-sdk-v5"),
+];
+for (const file of required) {
+  if (!fs.existsSync(file)) {
+    throw new Error(`standalone 缺少 ${file}，打包后的桌面应用无法启动。`);
+  }
+}
+
 console.log("已把 .next/static 与 public 复制进 standalone，可供 Electron 打包。");

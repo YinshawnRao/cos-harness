@@ -2,20 +2,22 @@ import { createRequire } from "node:module";
 import { describe, expect, it } from "vitest";
 
 const require = createRequire(import.meta.url);
+type EnvMap = Record<string, string | undefined>;
+
 const runtime = require("../../electron/runtime.cjs") as {
   LISTEN_HOST: string;
   PREFERRED_PORT: number;
   desktopDataDir: (userDataPath: string) => string;
   isAppOrigin: (url: string, host: string, port: number) => boolean;
-  resolveDataDir: (env?: NodeJS.ProcessEnv, cwd?: string) => string;
-  resolveListenHost: (hostname: string | undefined, env?: NodeJS.ProcessEnv) => string;
+  resolveDataDir: (env?: EnvMap, cwd?: string) => string;
+  resolveListenHost: (hostname: string | undefined, env?: EnvMap) => string;
   spawnServerEnv: (opts: {
     packaged: boolean;
     dataDir: string;
     host: string;
     port: number;
-    extra?: NodeJS.ProcessEnv;
-  }) => NodeJS.ProcessEnv;
+    extra?: EnvMap;
+  }) => EnvMap;
 };
 
 describe("desktop listen host and userData", () => {

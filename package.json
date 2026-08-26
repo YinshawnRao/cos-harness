@@ -1,6 +1,7 @@
 {
   "name": "cos-harness",
   "productName": "COS Harness",
+  "desktopName": "COS Harness",
   "version": "0.1.0",
   "private": true,
   "main": "electron/main.cjs",
