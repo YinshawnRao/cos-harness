@@ -476,7 +476,7 @@ function ImageStage({
   }
 
   const before = result?.originalUrl || preview;
-  const after = result?.processedUrl;
+  const after = result?.processedUrl ?? null;
 
   return (
     <div className="flex h-full min-h-0 flex-col">
